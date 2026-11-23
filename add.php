@@ -14,10 +14,7 @@
     $request = json_decode($postdata);
 
       // validate the required fields
-      if (trim($request->data->authorName) == '' || trim($request->data->bookTitle) == '' || 
-      trim($request->data->storyHook) == '' || trim($request->data->genre) == '' || 
-      trim($request->data->pubDate) == '' || trim($request->data->publisher) == '' || 
-      trim($request->data->recBy) == '' || trim($request->data->starRating) == '') {
+      if (trim($request->data->authorName) == '' || trim($request->data->bookTitle) == '') {
       
       http_response_code(400);
       echo json_encode(['message' => 'missing required fields']);
@@ -31,12 +28,21 @@
       $genre = mysqli_real_escape_string($boo, trim($request->data->genre));
       $pubDate = mysqli_real_escape_string($boo, trim($request->data->pubDate));
       $publisher = mysqli_real_escape_string($boo, trim($request->data->publisher));
-      $recBy = mysqli_real_escape_string($boo, trim($request->data->recBy));
-      $starRating = mysqli_real_escape_string($boo, trim($request->data->starRating));
+      
+      $recBy = trim((string) ($request->data->recBy ?? ''));
+      $recBy = $recBy === '' ? null : mysqli_real_escape_string($boo, $recBy);
+      
+      $starRating = trim((string) ($request->data->starRating ?? ''));
+      $starRating = $starRating === '' ? null : mysqli_real_escape_string($boo, $starRating);
+      
+      $imageName = mysqli_real_escape_string($boo, trim($request->data->imageName ?? 'placeholder_100.jpg'));
 
       // insert into database
-      $sql = "INSERT INTO `mybooks`(`authorName`, `bookTitle`, `storyHook`, `genre`, `pubDate`, `publisher`, `recBy`, `starRating`)
-        VALUES('{$authorName}', '{$bookTitle}', '{$storyHook}', '{$genre}', '{$pubDate}', '{$publisher}', '{$recBy}', '{$starRating}')";
+      $recBySql = $recBy === null ? 'NULL' : "'{$recBy}'";
+      $starRatingSql = $starRating === null ? 'NULL' : "'{$starRating}'";
+
+      $sql = "INSERT INTO `mybooks`(`authorName`, `bookTitle`, `storyHook`, `genre`, `pubDate`, `publisher`, `recBy`, `starRating`, `imageName`)
+        VALUES('{$authorName}', '{$bookTitle}', '{$storyHook}', '{$genre}', '{$pubDate}', '{$publisher}', {$recBySql}, {$starRatingSql},'{$imageName}')";
 
       if (mysqli_query($boo, $sql)) {
         http_response_code(201);
@@ -50,7 +56,8 @@
             'pubDate' => $pubDate,
             'publisher' => $publisher,
             'recBy' => $recBy,
-            'starRating' => $starRating
+            'starRating' => $starRating,
+            'imageName' => $imageName
           ]
         ]);
       }
