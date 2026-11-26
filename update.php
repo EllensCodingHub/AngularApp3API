@@ -8,7 +8,7 @@
   error_reporting(E_ALL);
 
   // parse form data
-  $bookID = isset($_POST['bookID']) ? (int) $_POST['contactID'] : 0;
+  $bookID = isset($_POST['bookID']) ? (int) $_POST['bookID'] : 0;
   $authorName = mysqli_real_escape_string($boo, $_POST['authorName'] ?? '');
   $bookTitle = mysqli_real_escape_string($boo, $_POST['bookTitle'] ?? '');
   $storyHook = mysqli_real_escape_string($boo, $_POST['storyHook'] ?? '');
@@ -25,16 +25,18 @@
     exit;
   }
 
-  // update contact
-  $sql = "UPDATE books SET
+  // update book
+  $recBySql = $recBy === '' ? 'NULL' : "'{$recBy}'";
+  $starRatingSql = $starRating === '' ? 'NULL' : "'{$starRating}'";
+  $sql = "UPDATE mybooks SET
     authorName = '$authorName',
     bookTitle = '$bookTitle',
     storyHook = '$storyHook',
     genre = '$genre',
     pubDate = '$pubDate',
     publisher = '$publisher',
-    recBy = '$recBy',
-    starRating = '$starRating'
+    recBy = {$recBySql},
+    starRating = {$starRating}
     WHERE bookID = $bookID LIMIT 1";
 
   if (mysqli_query($boo, $sql)) {
